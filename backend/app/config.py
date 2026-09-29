@@ -1,0 +1,17 @@
+import os
+
+class Settings:
+    PROJECT_NAME = "API Gerencial de Siniestralidad Vial"
+    VERSION = "1.0.0"
+    
+    # Base de Datos
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+    DB_NAME = "db_siniestralidad_vial"
+    
+    # Seguridad JWT
+    SECRET_KEY = os.getenv("SECRET_KEY", "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7")
+    ALGORITHM = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+# Instancia global
+settings = Settings()

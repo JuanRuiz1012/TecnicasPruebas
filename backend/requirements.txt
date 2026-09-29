@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pymongo
+pydantic
+pydantic[email]
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+scikit-learn
+pandas
+numpy
