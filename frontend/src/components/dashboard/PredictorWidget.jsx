@@ -79,7 +79,7 @@ export function PredictorWidget() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-xl font-bold text-sm bg-gradient-to-b from-[#4da3ff] via-[#0a84ff] to-[#5e5ce6] text-white shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-11 rounded-xl font-bold text-sm btn-accent focus-ring flex items-center justify-center gap-2 cursor-pointer"
           >
             <BrainCircuit size={18} />
             {loading ? 'Generando análisis...' : 'Ejecutar Proyección IA'}

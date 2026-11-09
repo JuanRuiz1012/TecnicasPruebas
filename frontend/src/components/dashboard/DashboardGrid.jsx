@@ -8,9 +8,48 @@ import { TrendChart } from './TrendChart';
 import { WeeklyChart } from './WeeklyChart';
 import { FilterPanel } from './FilterPanel';
 import { useDashboardData } from '../../hooks/useDashboardData';
-import { PredictorWidget } from './PredictorWidget';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+
+const bar = 'rounded-[6px] bg-[var(--bjork-surface-active)]';
+
+// Misma silueta que el grid real (rowHeight 100 + margen 10): 4 KPIs, 2 gráficas anchas y 3 angostas
+function DashboardSkeleton() {
+    const chart = (key) => (
+        <div key={key} className="surface-card flex h-[310px] flex-col p-4">
+            <div className={`${bar} h-3.5 w-1/3`} />
+            <div className="mt-5 flex flex-1 items-end gap-2">
+                {[55, 80, 40, 95, 65, 30, 70].map((h, i) => (
+                    <div key={i} className={`${bar} flex-1`} style={{ height: `${h}%` }} />
+                ))}
+            </div>
+        </div>
+    );
+    return (
+        <div role="status" aria-label="Cargando datos del dashboard" className="space-y-[10px] motion-safe:animate-pulse">
+            <span className="sr-only">Consultando registros en MongoDB…</span>
+            <div className="grid grid-cols-2 gap-[10px] lg:grid-cols-4">
+                {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="surface-card flex h-[100px] flex-col justify-center p-4">
+                        <div className={`${bar} h-3 w-1/2`} />
+                        <div className={`${bar} mt-3 h-6 w-2/3`} />
+                    </div>
+                ))}
+            </div>
+            <div className="grid grid-cols-1 gap-[10px] lg:grid-cols-2">{[0, 1].map(chart)}</div>
+            <div className="grid grid-cols-1 gap-[10px] lg:grid-cols-3">{[2, 3, 4].map(chart)}</div>
+        </div>
+    );
+}
+
+function Kpi({ label, value }) {
+    return (
+        <article className="surface-card flex h-full min-w-0 flex-col justify-center p-4">
+            <h3 className="text-[12.5px] font-medium text-[color:var(--bjork-text-muted)]">{label}</h3>
+            <p className="mt-2 truncate text-[24px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{value ?? '—'}</p>
+        </article>
+    );
+}
 
 export function DashboardGrid() {
     const [filters, setFilters] = useState({});
@@ -26,22 +65,27 @@ export function DashboardGrid() {
         { i: 'chart-class', x: 0, y: 4, w: 4, h: 3, minW: 3, minH: 2 },
         { i: 'chart-trend', x: 4, y: 4, w: 4, h: 3, minW: 3, minH: 2 },
         { i: 'chart-weekly', x: 8, y: 4, w: 4, h: 3, minW: 3, minH: 2 },
-        // Añadimos las coordenadas del widget predictivo abarcando todo el ancho (w: 12) debajo de las gráficas
-        { i: 'predictor', x: 0, y: 7, w: 12, h: 3, minW: 6, minH: 3 },
     ];
+
+    // FilterPanel va siempre en la misma posición: React no lo desmonta al cargar y conserva lo seleccionado
+    const filterPanel = <FilterPanel onApplyFilters={setFilters} />;
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <p className="text-text-muted animate-pulse text-lg">Consultando el millón de registros en MongoDB...</p>
+            <div className="w-full space-y-4">
+                {filterPanel}
+                <DashboardSkeleton />
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="p-4 bg-red-500/10 border border-red-500 rounded-soft text-red-500">
-                <p>{error}</p>
+            <div className="w-full space-y-4">
+                {filterPanel}
+                <div role="alert" className="rounded-[12px] bg-[var(--bjork-error-soft)] p-4 text-[13px] text-[color:var(--bjork-error)]">
+                    <p>{error}</p>
+                </div>
             </div>
         );
     }
@@ -51,7 +95,7 @@ export function DashboardGrid() {
 
     return (
         <div className="w-full space-y-4">
-            <FilterPanel onApplyFilters={(newFilters) => setFilters(newFilters)} />
+            {filterPanel}
 
             <ResponsiveGridLayout
                 className="layout"
@@ -63,10 +107,10 @@ export function DashboardGrid() {
                 isDraggable={true}
                 isResizable={true}
             >
-                <div key="kpi-1"><Card><p className="text-sm text-text-muted">Total Siniestros</p><p className="text-2xl font-bold text-text-main">{metrics.total_siniestros?.toLocaleString()}</p></Card></div>
-                <div key="kpi-2"><Card><p className="text-sm text-text-muted">Tasa Mortalidad</p><p className="text-2xl font-bold text-text-main">{metrics.tasa_mortalidad_por_mil}‰</p></Card></div>
-                <div key="kpi-3"><Card><p className="text-sm text-text-muted">% Con Heridos</p><p className="text-2xl font-bold text-text-main">{metrics.porcentaje_con_heridos}%</p></Card></div>
-                <div key="kpi-4"><Card><p className="text-sm text-text-muted">Ciudad Crítica</p><p className="text-2xl font-bold text-text-main">{metrics.ciudad_mas_critica}</p></Card></div>
+                <div key="kpi-1"><Kpi label="Total siniestros" value={metrics.total_siniestros?.toLocaleString('es-CO')} /></div>
+                <div key="kpi-2"><Kpi label="Tasa de mortalidad" value={`${metrics.tasa_mortalidad_por_mil}‰`} /></div>
+                <div key="kpi-3"><Kpi label="Con heridos" value={`${metrics.porcentaje_con_heridos}%`} /></div>
+                <div key="kpi-4"><Kpi label="Ciudad más crítica" value={metrics.ciudad_mas_critica} /></div>
 
                 <div key="chart-cities">
                     <Card title="Siniestros por Ciudad">
@@ -98,9 +142,6 @@ export function DashboardGrid() {
                     </Card>
                 </div>
 
-                <div key="predictor">
-                    <PredictorWidget />
-                </div>
             </ResponsiveGridLayout>
         </div>
     );

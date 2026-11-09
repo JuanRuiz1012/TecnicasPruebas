@@ -2,26 +2,20 @@ import { useState, useEffect } from 'react';
 
 export function useTheme() {
   const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
+    try {
       const saved = localStorage.getItem('theme');
-      if (saved) return saved === 'dark';
-      return true; // Predeterminado oscuro
+      return saved ? saved === 'dark' : true; // Predeterminado oscuro
+    } catch {
+      return true;
     }
-    return true;
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    if (isDark) {
-      root.classList.remove('light');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.add('light');
-      localStorage.setItem('theme', 'light');
-    }
+    document.documentElement.classList.toggle('dark', isDark);
+    try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch { /* modo privado */ }
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark(!isDark);
+  const toggleTheme = () => setIsDark((v) => !v);
 
   return { isDark, toggleTheme };
 }

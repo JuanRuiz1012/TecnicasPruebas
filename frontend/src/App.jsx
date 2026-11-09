@@ -1,155 +1,292 @@
-import React, { useState, useEffect } from 'react';
-import { DashboardGrid } from './components/dashboard/DashboardGrid';
-import { loginUser, getToken, logoutUser } from './services/authService';
-import { LogOut, Lock, User, TriangleAlert, Sun, Moon } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useTheme } from './hooks/useTheme';
+import React, { useState } from "react";
+import { DashboardGrid } from "./components/dashboard/DashboardGrid";
+import { PredictorWidget } from "./components/dashboard/PredictorWidget";
+import {
+  AppDashboardShell,
+  BrandMark,
+  IconButton,
+} from "./components/ui/app-dashboard-shell";
+import {
+  loginUser,
+  getToken,
+  getSession,
+  logoutUser,
+} from "./services/authService";
+import {
+  BookOpen,
+  BrainCircuit,
+  ChartNoAxesCombined,
+  Lock,
+  LogOut,
+  Moon,
+  Sun,
+  User,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { useTheme } from "./hooks/useTheme";
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
-  const [errorMsg, setErrorMsg] = useState('');
-  const { isDark, toggleTheme } = useTheme();
+const API_DOCS_URL = "http://127.0.0.1:8000/docs";
 
-  useEffect(() => {
-    const token = getToken();
-    if (token) setIsAuthenticated(true);
-  }, []);
+const VIEWS = {
+  overview: {
+    label: "Resumen",
+    subtitle:
+      "Indicadores y distribución de siniestros viales · datos históricos consolidados",
+  },
+  predict: {
+    label: "Predicción ML",
+    subtitle: "Simulador de severidad con Random Forest e informe gerencial",
+  },
+};
+
+function buildNav(rol) {
+  const analysis = [
+    { id: "overview", label: VIEWS.overview.label, icon: ChartNoAxesCombined },
+  ];
+  // El rol ciudadano no accede a predicciones (requerimiento de roles)
+  if (rol !== "ciudadano")
+    analysis.push({
+      id: "predict",
+      label: VIEWS.predict.label,
+      icon: BrainCircuit,
+      badge: "ML",
+    });
+  return [
+    { label: "Análisis", items: analysis },
+    {
+      label: "Recursos",
+      items: [
+        {
+          id: "docs",
+          label: "Documentación API",
+          icon: BookOpen,
+          href: API_DOCS_URL,
+        },
+      ],
+    },
+  ];
+}
+
+const fieldClass =
+  "h-10 w-full rounded-[9px] border border-[color:var(--bjork-border)] bg-[var(--bjork-field)] pl-9 pr-3 text-[13.5px] text-[color:var(--bjork-text)] shadow-[var(--bjork-shadow-soft)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[color:var(--bjork-text-soft)] focus-visible:border-[color:var(--bjork-accent)] focus-visible:ring-[3px] focus-visible:ring-[color:var(--bjork-accent-soft)]";
+
+function ThemeToggle({ isDark, toggleTheme }) {
+  return (
+    <IconButton
+      label={isDark ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
+      onClick={toggleTheme}
+    >
+      {isDark ? <Sun /> : <Moon />}
+    </IconButton>
+  );
+}
+
+function LoginScreen({ onLogin, theme }) {
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("admin123");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    setErrorMsg("");
+    setLoading(true);
     const success = await loginUser(username, password);
-    if (success) {
-      setIsAuthenticated(true);
-    } else {
-      setErrorMsg('Usuario o contraseña inválidos.');
-    }
+    setLoading(false);
+    if (success) onLogin();
+    else setErrorMsg("Usuario o contraseña inválidos.");
   };
 
-  const handleLogout = () => {
-    logoutUser();
-    setIsAuthenticated(false);
-  };
+  return (
+    <div className="grid min-h-screen bg-[var(--bjork-bg)] text-[color:var(--bjork-text)] lg:grid-cols-[1.1fr_1fr]">
+      <section className="relative hidden flex-col justify-between overflow-hidden border-r border-[color:var(--bjork-border)] bg-[var(--bjork-panel)] p-10 lg:flex">
+        <div className="flex items-center gap-2.5">
+          <BrandMark />
+          <span className="text-[14px] font-semibold">AccidentAPP</span>
+        </div>
+        <div className="max-w-[460px]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--bjork-accent-ink)]">
+            Universidad del Valle
+          </p>
+          <h2 className="mt-3 font-display text-[44px] italic leading-[1.05] tracking-[-0.01em]">
+            Datos para decidir dónde y cuándo intervenir la malla vial.
+          </h2>
+          <ul className="mt-8 space-y-3 text-[13.5px] text-[color:var(--bjork-text-medium)]">
+            <li className="flex items-center gap-2.5">
+              <ChartNoAxesCombined
+                size={16}
+                className="text-[color:var(--bjork-accent)]"
+                aria-hidden="true"
+              />{" "}
+              Analisis Descriptivo y predictivo{" "}
+            </li>
+            <li className="flex items-center gap-2.5">
+              <BrainCircuit
+                size={16}
+                className="text-[color:var(--bjork-accent)]"
+                aria-hidden="true"
+              />{" "}
+              Predicción de severidad con Machine Learning
+            </li>
+            {/* <li className="flex items-center gap-2.5"><Lock size={16} className="text-[color:var(--bjork-accent)]" aria-hidden="true" /> Acceso por roles: admin, analista y ciudadano</li> */}
+          </ul>
+        </div>
+        <p className="font-mono text-[11.5px] tabular-nums text-[color:var(--bjork-text-soft)]">
+          1.1M+ registros · 5 ciudades
+        </p>
+      </section>
 
-  // Blobs luminosos de fondo estilo iOS
-  const backgroundBlobs = (
-    <>
-      <div className="blob" style={{ width: '600px', height: '600px', background: '#0a84ff', left: '-100px', top: '-120px' }}></div>
-      <div className="blob" style={{ width: '550px', height: '550px', background: '#bf5af2', right: '-100px', top: '200px' }}></div>
-      <div className="blob" style={{ width: '500px', height: '500px', background: '#ff375f', left: '400px', bottom: '-200px', opacity: 0.25 }}></div>
-    </>
-  );
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-        {backgroundBlobs}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full glass-panel p-8 space-y-6 relative z-10"
+      <section className="relative flex items-center justify-center p-4 sm:p-8">
+        <div className="absolute right-4 top-4">
+          <ThemeToggle {...theme} />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="surface-card w-full max-w-[380px] p-6 sm:p-7"
         >
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-[#64d2ff] via-[#0a84ff] to-[#bf5af2] flex items-center justify-center shadow-[0_10px_30px_rgba(10,132,255,0.5)]">
-              <TriangleAlert size={28} className="text-white" />
+          <div className="mb-6">
+            <div className="mb-4 lg:hidden">
+              <BrandMark size={36} />
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">AccidentAPP · Univalle</h1>
-            <p className="text-xs text-[var(--text-muted)]">Sistema de Monitoreo de Siniestralidad Vial</p>
+            <h1 className="font-display text-[30px] italic leading-none">
+              Iniciar sesión
+            </h1>
+            <p className="mt-2 text-[13px] text-[color:var(--bjork-text-muted)]">
+              Sistema de monitoreo de siniestralidad vial
+            </p>
           </div>
 
           {errorMsg && (
-            <div className="p-3 text-xs bg-red-500/10 border border-red-500/30 rounded-xl text-red-500 text-center">
+            <div
+              role="alert"
+              className="mb-4 rounded-[9px] bg-[var(--bjork-error-soft)] px-3 py-2 text-[12.5px] text-[color:var(--bjork-error)]"
+            >
               {errorMsg}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">Usuario</label>
+              <label
+                htmlFor="login-user"
+                className="mb-1.5 block text-[12.5px] font-medium text-[color:var(--bjork-text-medium)]"
+              >
+                Usuario
+              </label>
               <div className="relative">
-                <User size={16} className="absolute left-3.5 top-3.5 text-[var(--text-muted)]" />
-                <input 
-                  type="text" 
-                  value={username} 
+                <User
+                  size={15}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--bjork-text-soft)]"
+                />
+                <input
+                  id="login-user"
+                  type="text"
+                  autoComplete="username"
+                  value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full h-11 pl-10 pr-4 bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] rounded-xl text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--color-accent-blue)]"
+                  className={fieldClass}
                   required
                 />
               </div>
             </div>
-
             <div>
-              <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">Contraseña</label>
+              <label
+                htmlFor="login-pass"
+                className="mb-1.5 block text-[12.5px] font-medium text-[color:var(--bjork-text-medium)]"
+              >
+                Contraseña
+              </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-3.5 text-[var(--text-muted)]" />
-                <input 
-                  type="password" 
-                  value={password} 
+                <Lock
+                  size={15}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--bjork-text-soft)]"
+                />
+                <input
+                  id="login-pass"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-11 pl-10 pr-4 bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] rounded-xl text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--color-accent-blue)]"
+                  className={fieldClass}
                   required
                 />
               </div>
             </div>
-
-            <button 
+            <button
               type="submit"
-              className="w-full h-11 rounded-xl font-bold text-sm bg-gradient-to-b from-[#4da3ff] via-[#0a84ff] to-[#5e5ce6] text-white shadow-[0_8px_24px_rgba(10,132,255,0.5)] hover:scale-[1.02] transition-transform cursor-pointer"
+              disabled={loading}
+              className="btn-accent focus-ring h-10 w-full cursor-pointer rounded-[9px] text-[13.5px] font-semibold"
             >
-              Ingresar al Dashboard
+              {loading ? "Ingresando…" : "Ingresar al dashboard"}
             </button>
           </form>
         </motion.div>
-      </div>
+      </section>
+    </div>
+  );
+}
+
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() =>
+    Boolean(getToken()),
+  );
+  const [view, setView] = useState("overview");
+  const theme = useTheme();
+
+  if (!isAuthenticated) {
+    return (
+      <LoginScreen
+        onLogin={() => {
+          setView("overview");
+          setIsAuthenticated(true);
+        }}
+        theme={theme}
+      />
     );
   }
 
+  const session = getSession();
+  const current =
+    view === "predict" && session.rol === "ciudadano" ? "overview" : view;
+
+  const handleLogout = () => {
+    logoutUser();
+    setIsAuthenticated(false);
+  };
+
   return (
-    <div className="min-h-screen p-8 relative overflow-hidden">
-      {backgroundBlobs}
-      <div className="w-full max-w-[1600px] mx-auto space-y-6 relative z-10">
-        
-        {/* Header Estilo iOS */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-2"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#64d2ff] via-[#0a84ff] to-[#bf5af2] flex items-center justify-center shadow-[0_10px_30px_rgba(10,132,255,0.5),inset_0_1px_0_rgba(255,255,255,0.5)]">
-              <TriangleAlert size={28} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">AccidentAPP</h1>
-              <p className="text-sm text-[var(--text-muted)]">Monitoreo gerencial de accidentes de tránsito (1.1M+ registros)</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={toggleTheme}
-              className="w-11 h-11 rounded-full bg-black/5 dark:bg-white/5 border border-[var(--glass-border)] flex items-center justify-center text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer shadow-lg"
-              title="Cambiar Tema"
-            >
-              {isDark ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-indigo-600" />}
-            </button>
-
-            <button 
-              onClick={handleLogout}
-              className="h-11 px-5 rounded-full bg-red-500/15 border border-red-500/30 text-red-500 hover:bg-red-500/25 transition-colors flex items-center gap-2 font-semibold text-sm cursor-pointer shadow-lg"
-            >
-              <LogOut size={16} /> Salir
-            </button>
-          </div>
-        </motion.header>
-
-        {/* Dashboard Grid Redimensionable y Fluido */}
+    <AppDashboardShell
+      nav={buildNav(session.rol)}
+      active={current}
+      onNavigate={setView}
+      user={{ name: session.username || "Usuario", rol: session.rol }}
+      title={VIEWS[current].label}
+      subtitle={VIEWS[current].subtitle}
+      actions={
+        <>
+          <ThemeToggle {...theme} />
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="focus-ring inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[9px] border border-[color:var(--bjork-border)] bg-[var(--bjork-surface)] px-3 text-[12.5px] font-medium text-[color:var(--bjork-text-medium)] shadow-[var(--bjork-shadow-soft)] transition-colors hover:text-[color:var(--bjork-text)]"
+          >
+            <LogOut size={14} aria-hidden="true" /> Salir
+          </button>
+        </>
+      }
+    >
+      {current === "overview" ? (
         <DashboardGrid />
-
-      </div>
-    </div>
+      ) : (
+        <div className="min-h-[420px]">
+          <PredictorWidget />
+        </div>
+      )}
+    </AppDashboardShell>
   );
 }
 

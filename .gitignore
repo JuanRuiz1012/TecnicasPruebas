@@ -31,3 +31,20 @@ Thumbs.db
 
 # Documento del enunciado
 Enunciado PF.pdf
+
+# Documentos académicos (entregas, enunciado, plantillas)
+/*.pdf
+/*.docx
+
+# Datos y carpetas locales
+datasets/
+Nueva carpeta/
+
+# Herramientas locales (Claude Code, graphify)
+.claude/
+graphify-out/
+
+# Logs y cobertura
+*.log
+coverage/
+.pytest_cache/

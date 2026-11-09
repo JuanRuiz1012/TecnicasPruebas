@@ -161,9 +161,41 @@ python -m app.ml.train_model
 - No existen pruebas automatizadas ni lint de backend.
 - `frontend/eslint.config.js` disponible (`npm run lint`).
 
+### Hallazgos del análisis ligero (2026-11-03)
+
+**Bugs funcionales**
+- ~~Filtro de año no funciona~~ (resuelto 2026-11-03: envía `anio_inicio = anio_fin`): `FilterPanel` envía `anio`, pero `DashboardFilters` espera
+  `anio_inicio`/`anio_fin`; Pydantic ignora el campo y devuelve datos sin filtrar.
+- `TrendChart` y `WeeklyChart` reciben datos ordenados por `total` desc (`get_group_by_count`),
+  no por año/día: la línea de tendencia sale desordenada. `limit=15` además recorta años.
+- ~~(resuelto 2026-11-03: `FilterPanel` siempre montado + skeleton loader)~~ Al aplicar filtros, `DashboardGrid` mostraba el "loading" y desmonta `FilterPanel`:
+  los selects vuelven a vacío aunque el filtro siga aplicado.
+- Token vencido (60 min): el front sigue "autenticado" y solo muestra
+  "No se pudo conectar con el servidor"; no hay logout ante 401.
+
+**Seguridad / backend**
+- `core/security.py` duplica `SECRET_KEY` hardcodeado e ignora `settings` (la variable de
+  entorno `SECRET_KEY` no tiene efecto); `ACCESS_TOKEN_EXPIRE_MINUTES` tampoco se usa.
+- `/predict/severity` no exige JWT: el rol ciudadano (y cualquiera) puede predecir.
+- `predict.py`: clase/ciudad desconocida se codifica como `0` en silencio → predicción falsa
+  con "confianza". Rutas de `.pkl` relativas al cwd (falla si no se lanza desde `backend/`).
+- Campo `disabled` del usuario nunca se valida en login.
+- Dashboard: 6 consultas (1 count + 5 aggregate) por request sobre 1.1M docs, sin índices.
+
+**Frontend / mantenimiento**
+- `API_URL` hardcodeada en 3 sitios (`api.js`, `authService.js`, `PredictorWidget`).
+- Login pre-rellenado con `admin/admin123`; el rol no se guarda (ciudadano ve el predictor).
+- `PredictorWidget` no muestra error si la API falla.
+- Dependencias sin uso: `react-router-dom`, `clsx`, `tailwind-merge`; `framer-motion` → migrar a `motion`.
+- Backend: `passlib` en requirements sin uso; versiones sin fijar.
+- Accesibilidad: `<label>` sin `htmlFor`, selects de filtros sin etiqueta.
+
 ## 12. Bitácora
 
 | Fecha | Cambio |
 |---|---|
 | 2026-10-19 | Creación de esta memoria con el estado inicial del proyecto. |
 | 2026-10-19 | Creación de `ASESORIA_PF.md` con las respuestas para la asesoría del PF. |
+| 2026-11-03 | Análisis ligero de backend y frontend; hallazgos en la sección 11. |
+| 2026-11-08 | `Entrega#2.pdf` / `.docx`: corrección de la Entrega 1 (observaciones del docente, nota 4,5) + capítulo 7 + literal 8.1. 34 HU (22 implementadas). Pendiente: códigos de estudiantes (`[Código]`) y validar roles del equipo propuestos. |
+| 2026-11-03 | Rediseño visual: shell con sidebar (`components/ui/app-dashboard-shell.jsx`), vistas Resumen / Predicción ML, login en dos columnas, tokens `--bjork-*` (tema claro/oscuro vía clase `.dark`), gráficas con colores por variable CSS. Rol y usuario se guardan en `localStorage` solo para la UI; el ciudadano no ve "Predicción ML" en el menú. |

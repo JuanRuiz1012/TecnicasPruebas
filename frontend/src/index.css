@@ -2,67 +2,115 @@
 @import "react-grid-layout/css/styles.css";
 @import "react-resizable/css/styles.css";
 
+/* `dark:` sigue a la clase .dark que pone useTheme, no al sistema operativo */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-bg-app: var(--bg-app);
-  --color-text-main: var(--text-main);
-  --color-text-muted: var(--text-muted);
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --color-text-main: var(--bjork-text);
+  --color-text-muted: var(--bjork-text-muted);
+}
+
+:root {
+  --bjork-bg: #f7f3ea;
+  --bjork-surface: #fffcf6;
+  --bjork-surface-hover: #f5efe3;
+  --bjork-surface-active: #efe7d8;
+  --bjork-panel: #f8f2e7;
+  --bjork-menu: rgba(255, 252, 246, 0.98);
+  --bjork-field: rgba(255, 252, 246, 0.96);
+  --bjork-field-inset: rgba(239, 231, 216, 0.72);
+  --bjork-text: #171717;
+  --bjork-text-medium: rgba(23, 23, 23, 0.72);
+  --bjork-text-muted: rgba(23, 23, 23, 0.56);
+  --bjork-text-soft: rgba(23, 23, 23, 0.46);
+  --bjork-text-faint: rgba(23, 23, 23, 0.22);
+  --bjork-border: #eee6db;
+  --bjork-border-strong: #e1d7c8;
+  --bjork-accent: #ec7d43;
+  --bjork-accent-hover: #f0935f;
+  --bjork-accent-soft: rgba(236, 125, 67, 0.1);
+  --bjork-accent-ink: #b4501c;
+  --bjork-success: #2f8a4c;
+  --bjork-success-soft: rgba(47, 138, 76, 0.12);
+  --bjork-error: #c8402c;
+  --bjork-error-soft: rgba(200, 64, 44, 0.1);
+  --bjork-shadow-surface: inset 0 7px 14px rgba(88, 72, 49, 0.045), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.92), inset 1px 0 0 rgba(88, 72, 49, 0.026), inset -1px 0 0 rgba(255, 255, 255, 0.68), 0 14px 22px -9px rgba(66, 52, 33, 0.11);
+  --bjork-shadow-soft: inset 0 1px 0 rgba(88, 72, 49, 0.045), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.86);
+  --bjork-shadow-menu: inset 0 1px 0 rgba(88, 72, 49, 0.04), inset 0 12px 24px rgba(88, 72, 49, 0.022), 0 22px 44px -26px rgba(66, 52, 33, 0.22);
+  --bjork-shadow-inset: inset 0 1px 10px rgba(88, 72, 49, 0.12), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.72);
+
+  /* Alias de los tokens anteriores, aún usados por FilterPanel / PredictorWidget */
+  --text-main: var(--bjork-text);
+  --text-muted: var(--bjork-text-muted);
+  --glass-border: var(--bjork-border);
+  --color-accent-blue: var(--bjork-accent);
+  --color-accent-cyan: var(--bjork-accent);
+}
+
+.dark {
+  --bjork-bg: #111111;
+  --bjork-surface: #161616;
+  --bjork-surface-hover: #1b1b1b;
+  --bjork-surface-active: #242424;
+  --bjork-panel: #0d0d0d;
+  --bjork-menu: rgba(18, 18, 18, 0.98);
+  --bjork-field: rgba(18, 18, 18, 0.95);
+  --bjork-field-inset: rgba(9, 9, 9, 0.75);
+  --bjork-text: #ededed;
+  --bjork-text-medium: rgba(237, 237, 237, 0.72);
+  --bjork-text-muted: rgba(237, 237, 237, 0.6);
+  --bjork-text-soft: rgba(237, 237, 237, 0.4);
+  --bjork-text-faint: rgba(237, 237, 237, 0.22);
+  --bjork-border: #262626;
+  --bjork-border-strong: #343434;
+  --bjork-accent: #ec5c13;
+  --bjork-accent-hover: #f07832;
+  --bjork-accent-soft: rgba(236, 92, 19, 0.14);
+  --bjork-accent-ink: #f59a66;
+  --bjork-success: #4cc27a;
+  --bjork-success-soft: rgba(76, 194, 122, 0.12);
+  --bjork-error: #f06a55;
+  --bjork-error-soft: rgba(240, 106, 85, 0.12);
+  --bjork-shadow-surface: inset 0 7px 14px rgba(255, 255, 255, 0.03), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.06), 0 14px 20px -6px rgba(0, 0, 0, 0.45);
+  --bjork-shadow-soft: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  --bjork-shadow-menu: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 22px 42px -22px rgba(0, 0, 0, 0.9);
+  --bjork-shadow-inset: inset 0 1px 10px rgba(0, 0, 0, 0.45);
 }
 
 @layer base {
-  :root {
-    /* TEMA OSCURO (Por defecto estilo iOS Glass) */
-    --bg-app: #05060d;
-    --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --text-main: #ffffff;
-    --text-muted: rgba(235, 235, 245, 0.62);
-    --card-shadow: 0 22px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-
-  .light {
-    /* TEMA CLARO: Tonos pastel vivos, limpios y modernos */
-    --bg-app: #f1f5f9;
-    --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.65));
-    --glass-border: rgba(0, 0, 0, 0.08);
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --card-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  }
-
   body {
-    background-color: var(--bg-app);
-    color: var(--text-main);
-    font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-    overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--bjork-bg);
+    color: var(--bjork-text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Efecto Glassmorphism adaptable a ambos temas */
+.surface-card,
 .glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: 28px;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+  background: var(--bjork-surface);
+  border: 1px solid var(--bjork-border);
+  border-radius: 16px;
+  box-shadow: var(--bjork-shadow-surface);
 }
 
-.glass-panel:hover {
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+.btn-accent {
+  background: var(--bjork-accent);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.15s ease;
+}
+.btn-accent:hover { background: var(--bjork-accent-hover); }
+.btn-accent:disabled { opacity: 0.6; cursor: progress; }
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--bjork-accent);
+  outline-offset: 2px;
 }
 
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: -1;
-  transition: opacity 0.3s ease;
-}
-
-.light .blob {
-  opacity: 0.15; /* Más sutil en modo claro */
+/* Placeholder de arrastre de react-grid-layout con el acento del tema */
+.react-grid-item.react-grid-placeholder {
+  background: var(--bjork-accent);
+  border-radius: 16px;
 }

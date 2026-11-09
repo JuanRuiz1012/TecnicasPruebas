@@ -11,7 +11,8 @@ export function FilterPanel({ onApplyFilters }) {
     e.preventDefault();
     const activeFilters = {};
     if (ciudad) activeFilters.ciudad = ciudad;
-    if (anio) activeFilters.anio = parseInt(anio);
+    // El backend filtra por rango (DashboardFilters.anio_inicio/anio_fin); un año = rango de un año
+    if (anio) activeFilters.anio_inicio = activeFilters.anio_fin = parseInt(anio, 10);
     if (gravedad) activeFilters.gravedad = gravedad;
     onApplyFilters(activeFilters);
   };
@@ -27,9 +28,9 @@ export function FilterPanel({ onApplyFilters }) {
     <motion.div 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-panel p-4 flex flex-wrap items-center gap-4 mb-6"
+      className="glass-panel p-4 flex flex-wrap items-center gap-4"
     >
-      <div className="flex items-center gap-2 font-bold text-sm text-[var(--color-accent-blue, #0a84ff)] px-2">
+      <div className="flex items-center gap-2 font-bold text-sm text-[color:var(--bjork-accent-ink)] px-2">
         <Filter size={18} />
         <span>Filtros</span>
       </div>
@@ -77,7 +78,7 @@ export function FilterPanel({ onApplyFilters }) {
 
         <button 
           type="submit"
-          className="h-11 px-7 rounded-full font-bold text-sm bg-gradient-to-b from-[#4da3ff] via-[#0a84ff] to-[#5e5ce6] text-white shadow-[0_8px_24px_rgba(10,132,255,0.5)] hover:scale-105 transition-transform cursor-pointer"
+          className="h-11 px-7 rounded-full font-bold text-sm btn-accent focus-ring cursor-pointer"
         >
           Aplicar
         </button>

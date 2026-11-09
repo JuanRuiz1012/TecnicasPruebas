@@ -22,6 +22,9 @@ export async function loginUser(username, password) {
     const data = await response.json();
     // Guardamos el token en el almacenamiento local del navegador
     localStorage.setItem('token', data.access_token);
+    // Solo para mostrar en la UI; la autorización real la decide el backend con el JWT
+    localStorage.setItem('username', username);
+    localStorage.setItem('rol', data.rol ?? '');
     return true;
   } catch (error) {
     console.error('Error de autenticación:', error);
@@ -33,6 +36,10 @@ export function getToken() {
   return localStorage.getItem('token');
 }
 
+export function getSession() {
+  return { username: localStorage.getItem('username'), rol: localStorage.getItem('rol') };
+}
+
 export function logoutUser() {
-  localStorage.removeItem('token');
+  ['token', 'username', 'rol'].forEach((k) => localStorage.removeItem(k));
 }
